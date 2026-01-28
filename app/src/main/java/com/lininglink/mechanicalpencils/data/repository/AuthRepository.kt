@@ -5,8 +5,13 @@ import com.lininglink.mechanicalpencils.data.local.TokenManager
 import com.lininglink.mechanicalpencils.data.model.AuthResponse
 import com.lininglink.mechanicalpencils.data.model.LoginRequest
 import com.lininglink.mechanicalpencils.data.model.RegisterRequest
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class AuthRepository(
     private val apiService: ApiService,
@@ -21,6 +26,8 @@ class AuthRepository(
             val authResponse = apiService.login(request)
             tokenManager.saveToken(authResponse.token)
             Result.success(authResponse)
+        } catch (e: ClientRequestException) {
+            Result.failure(Exception(parseErrorMessage(e)))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -36,8 +43,20 @@ class AuthRepository(
             val authResponse = apiService.register(request)
             tokenManager.saveToken(authResponse.token)
             Result.success(authResponse)
+        } catch (e: ClientRequestException) {
+            Result.failure(Exception(parseErrorMessage(e)))
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    private suspend fun parseErrorMessage(e: ClientRequestException): String {
+        return try {
+            val body = e.response.bodyAsText()
+            val json = Json.parseToJsonElement(body).jsonObject
+            json["error"]?.jsonPrimitive?.content ?: "Request failed"
+        } catch (_: Exception) {
+            "Request failed"
         }
     }
 
