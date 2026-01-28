@@ -3,15 +3,13 @@ package com.lininglink.mechanicalpencils.data.repository
 import com.lininglink.mechanicalpencils.data.api.ApiService
 import com.lininglink.mechanicalpencils.data.local.TokenManager
 import com.lininglink.mechanicalpencils.data.model.AuthResponse
+import com.lininglink.mechanicalpencils.data.model.ErrorResponse
 import com.lininglink.mechanicalpencils.data.model.LoginRequest
 import com.lininglink.mechanicalpencils.data.model.RegisterRequest
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.bodyAsText
+import io.ktor.client.call.body
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 class AuthRepository(
     private val apiService: ApiService,
@@ -21,15 +19,18 @@ class AuthRepository(
     val isLoggedIn: Flow<Boolean> = tokenManager.tokenFlow.map { token -> token != null }
 
     suspend fun login(email: String, password: String): Result<AuthResponse> {
-        return try {
+        return runCatching {
             val request = LoginRequest(email, password)
-            val authResponse = apiService.login(request)
-            tokenManager.saveToken(authResponse.token)
-            Result.success(authResponse)
-        } catch (e: ClientRequestException) {
-            Result.failure(Exception(parseErrorMessage(e)))
-        } catch (e: Exception) {
-            Result.failure(e)
+            val response = apiService.login(request)
+
+            if (response.status == HttpStatusCode.Created) {
+                val authResponse: AuthResponse = response.body()
+                tokenManager.saveToken(authResponse.token)
+                authResponse
+            } else {
+                val errRes: ErrorResponse = response.body()
+                throw Exception(errRes.error)
+            }
         }
     }
 
@@ -38,25 +39,18 @@ class AuthRepository(
         password: String,
         passwordConfirmation: String
     ): Result<AuthResponse> {
-        return try {
+        return runCatching {
             val request = RegisterRequest(email, password, passwordConfirmation)
-            val authResponse = apiService.register(request)
-            tokenManager.saveToken(authResponse.token)
-            Result.success(authResponse)
-        } catch (e: ClientRequestException) {
-            Result.failure(Exception(parseErrorMessage(e)))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+            val response = apiService.register(request)
 
-    private suspend fun parseErrorMessage(e: ClientRequestException): String {
-        return try {
-            val body = e.response.bodyAsText()
-            val json = Json.parseToJsonElement(body).jsonObject
-            json["error"]?.jsonPrimitive?.content ?: "Request failed"
-        } catch (_: Exception) {
-            "Request failed"
+            if (response.status == HttpStatusCode.Created) {
+                val authResponse: AuthResponse = response.body()
+                tokenManager.saveToken(authResponse.token)
+                authResponse
+            } else {
+                val errRes: ErrorResponse = response.body()
+                throw Exception(errRes.error)
+            }
         }
     }
 

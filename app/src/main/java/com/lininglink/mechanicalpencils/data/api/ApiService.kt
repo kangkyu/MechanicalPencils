@@ -33,22 +33,22 @@ class ApiService(private val client: HttpClient) {
     }
 
     // Auth endpoints
-    suspend fun login(request: LoginRequest): AuthResponse {
+    suspend fun login(request: LoginRequest): HttpResponse {
         return client.post("$BASE_URL/api/v1/session") {
             contentType(ContentType.Application.Json)
             setBody(request)
-        }.body()
+        }
     }
 
     suspend fun logout(): HttpResponse {
         return client.delete("$BASE_URL/api/v1/session")
     }
 
-    suspend fun register(request: RegisterRequest): AuthResponse {
+    suspend fun register(request: RegisterRequest): HttpResponse {
         return client.post("$BASE_URL/api/v1/registration") {
             contentType(ContentType.Application.Json)
             setBody(request)
-        }.body()
+        }
     }
 
     // Items endpoints

@@ -22,3 +22,8 @@ data class AuthResponse(
     val token: String,
     val user: User
 )
+
+@Serializable
+data class ErrorResponse(
+    val error: String
+)
