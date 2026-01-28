@@ -8,15 +8,13 @@ import com.lininglink.mechanicalpencils.data.model.LoginRequest
 import com.lininglink.mechanicalpencils.data.model.RegisterRequest
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class AuthRepository(
     private val apiService: ApiService,
     private val tokenManager: TokenManager
 ) {
 
-    val isLoggedIn: Flow<Boolean> = tokenManager.tokenFlow.map { token -> token != null }
+    fun isAuthenticated(): Boolean = tokenManager.getToken() != null
 
     suspend fun login(email: String, password: String): Result<AuthResponse> {
         return runCatching {
@@ -63,9 +61,5 @@ class AuthRepository(
             tokenManager.clearToken()
             Result.success(Unit)
         }
-    }
-
-    suspend fun isAuthenticated(): Boolean {
-        return tokenManager.getToken() != null
     }
 }

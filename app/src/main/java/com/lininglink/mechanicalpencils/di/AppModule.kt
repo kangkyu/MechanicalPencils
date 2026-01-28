@@ -13,6 +13,7 @@ import com.lininglink.mechanicalpencils.ui.screens.collection.CollectionViewMode
 import com.lininglink.mechanicalpencils.ui.screens.groups.GroupsViewModel
 import com.lininglink.mechanicalpencils.ui.screens.item.ItemDetailViewModel
 import com.lininglink.mechanicalpencils.ui.screens.profile.UserProfileViewModel
+import com.lininglink.mechanicalpencils.ui.screens.settings.SettingsViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -22,7 +23,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -53,7 +53,7 @@ val appModule = module {
 
             defaultRequest {
                 val tokenManager: TokenManager = get()
-                val token = runBlocking { tokenManager.getToken() }
+                val token = tokenManager.getToken()
                 token?.let {
                     header("Authorization", "Bearer $it")
                 }
@@ -78,4 +78,5 @@ val appModule = module {
     viewModel { GroupsViewModel(get()) }
     viewModel { CollectionViewModel(get()) }
     viewModel { params -> UserProfileViewModel(params.get(), get()) }
+    viewModel { SettingsViewModel(get()) }
 }

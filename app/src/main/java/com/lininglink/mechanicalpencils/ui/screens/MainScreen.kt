@@ -40,6 +40,7 @@ import com.lininglink.mechanicalpencils.ui.screens.item.ItemDetailViewModel
 import com.lininglink.mechanicalpencils.ui.screens.profile.UserProfileScreen
 import com.lininglink.mechanicalpencils.ui.screens.profile.UserProfileViewModel
 import com.lininglink.mechanicalpencils.ui.screens.settings.SettingsScreen
+import com.lininglink.mechanicalpencils.ui.screens.settings.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -51,7 +52,6 @@ data class BottomNavItem<T : Any>(
 
 @Composable
 fun MainScreen(
-    userEmail: String?,
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -221,8 +221,9 @@ fun MainScreen(
 
             // Settings Tab
             composable<Settings> {
+                val settingsViewModel: SettingsViewModel = koinViewModel()
                 SettingsScreen(
-                    userEmail = userEmail,
+                    viewModel = settingsViewModel,
                     onLogout = onLogout
                 )
             }

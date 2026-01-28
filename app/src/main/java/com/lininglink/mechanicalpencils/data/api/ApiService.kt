@@ -98,6 +98,11 @@ class ApiService(private val client: HttpClient) {
         ).body()
     }
 
+    // Current user endpoint
+    suspend fun getCurrentUser(): HttpResponse {
+        return client.get("$BASE_URL/api/v1/me")
+    }
+
     // User Profile endpoint
     suspend fun getUserProfile(userId: Int): UserProfileResponse {
         return client.get("$BASE_URL/api/v1/users/$userId").body()

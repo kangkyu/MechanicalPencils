@@ -19,13 +19,6 @@ fun AppNavGraph(
 ) {
     val navController = rememberNavController()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-    val uiState by authViewModel.uiState.collectAsState()
-
-    // Get user email from successful auth state
-    val userEmail = when (val state = uiState) {
-        is com.lininglink.mechanicalpencils.ui.screens.auth.AuthUiState.Success -> state.user.email
-        else -> null
-    }
 
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
@@ -73,7 +66,6 @@ fun AppNavGraph(
 
         composable<MainTabs> {
             MainScreen(
-                userEmail = userEmail,
                 onLogout = {
                     authViewModel.logout()
                 }

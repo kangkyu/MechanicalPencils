@@ -25,13 +25,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
     init {
-        checkAuthStatus()
-    }
-
-    private fun checkAuthStatus() {
-        viewModelScope.launch {
-            _isLoggedIn.value = authRepository.isAuthenticated()
-        }
+        _isLoggedIn.value = authRepository.isAuthenticated()
     }
 
     fun login(email: String, password: String) {
